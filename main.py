@@ -2,20 +2,24 @@ import os
 import requests
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
 
-load_dotenv()
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
-API_URL = os.getenv("HUGGINGFACE_API_URL")
+api_key = os.getenv("HUGGINGFACE_API_KEY")
+api_url = os.getenv("HUGGINGFACE_API_URL")
 
-print("🧪 .env loaded manually:", open(".env").read())
-print("🔍 API KEY:", HUGGINGFACE_API_KEY)
-print("🔍 API URL:", API_URL)
+print("🔍 API KEY:", api_key)
+print("🔍 API URL:", api_url)
 
-HEADERS = {"Authorization": f"Bearer {HUGGINGFACE_API_KEY}"}
+HEADERS = {"Authorization": f"Bearer {api_key}"}
 
 @app.post("/analyze-resume/")
 async def analyze_resume(request: Request):
@@ -24,7 +28,6 @@ async def analyze_resume(request: Request):
         resume = body.get("resume")
         job_desc = body.get("job_description")
 
-        # Combine resume and job desc into one string for classification
         combined_input = f"Resume: {resume}. Job Description: {job_desc}"
 
         payload = {
@@ -34,7 +37,7 @@ async def analyze_resume(request: Request):
             }
         }
 
-        response = requests.post(API_URL, headers=HEADERS, json=payload)
+        response = requests.post(api_url, headers=HEADERS, json=payload)
         print("📤 Sent to Hugging Face:", payload)
 
         result = response.json()
